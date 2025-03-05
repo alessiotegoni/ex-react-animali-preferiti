@@ -8,6 +8,30 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        .modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .modal button {
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -25,7 +49,24 @@
 
     <script type="text/babel">
         const { useState } = React;
+        const { createPortal } = ReactDOM;
         const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
+
+        function Modal({ show, onClose, onConfirm, children }) {
+            if (!show) return null;
+            return createPortal(
+                <div className="modal-container">
+                    <div className="modal">
+                        {children}
+                        <div>
+                            <button onClick={onClose}>Annulla</button>
+                            <button onClick={onConfirm}>Conferma</button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            );
+        }
 
         function AnimalList() {
             const [animals, setAnimals] = useState([]);
@@ -80,18 +121,10 @@
                         </ul>
                     </details>
                     {error && <p style={{ color: "red" }}>{error}</p>}
-                    {showModal && (
-                        <div className="modal-container">
-                            <div className="modal">
-                                <h2>Aggiungi un Animale</h2>
-                                <input type="text" value={newAnimal} onChange={(e) => setNewAnimal(e.target.value)} placeholder="Inserisci un animale" />
-                                <div>
-                                    <button onClick={() => setShowModal(false)}>Annulla</button>
-                                    <button onClick={addAnimalFromAPI}>Conferma</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <Modal show={showModal} onClose={() => setShowModal(false)} onConfirm={addAnimalFromAPI}>
+                        <h2>Aggiungi un Animale</h2>
+                        <input type="text" value={newAnimal} onChange={(e) => setNewAnimal(e.target.value)} placeholder="Inserisci un animale" />
+                    </Modal>
                     {loading && <p>Caricamento...</p>}
                 </div>
             );
